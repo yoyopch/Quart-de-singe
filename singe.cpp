@@ -3,6 +3,8 @@
 #include <fstream> // pour ifstream
 #include <iomanip> // pour setw
 
+#pragma warning(disable: 4996)
+
 using namespace std;
 enum { MAX_CHAR = 26 };
 #define FINISH1 '?'
@@ -14,7 +16,7 @@ enum { MAX_CHAR = 26 };
 #define FAUX 0
 typedef int BOOL;
 
-struct Partie{
+struct Partie {
   char mot[MAX_CHAR];
   unsigned int taillemot;
   unsigned int nbJoueurs;
@@ -23,6 +25,8 @@ struct Partie{
   char motJoueurDeviner[MAX_CHAR];
   char* ordre;
   float* score;
+  char motRobot[1];
+  char motDicoEnCours[MAX_CHAR];
 };
 
 void mancheJeu(Partie& partie);
@@ -41,6 +45,7 @@ void finduJeu(Partie& partie);
 void nouvelleManche(Partie& partie);
 void init(Partie& partie, char pl[]);
 void AffichemotExistePas(Partie& partie, unsigned int indice, char mot[]);
+int LettreRobot(Partie& partie, unsigned int indice);
 void resetMotJoueur(Partie& partie);
 
 void resetMotJoueur(Partie& partie) {
@@ -51,7 +56,7 @@ void resetMotJoueur(Partie& partie) {
  * @brief Initialiser les structure.
  * @param
  */
-void init(Partie& partie, char pl[]){
+void init(Partie& partie, char pl[]) {
 
   for (unsigned int i = 0; i < MAX_CHAR; i++) {
     partie.mot[i] = NULL;
@@ -94,12 +99,11 @@ void nouvelleManche(Partie& partie) {
   for (unsigned int i = 0; i < MAX_CHAR; i++) {
     partie.mot[i] = NULL;
     partie.taillemot = 0;
-
   }
 
   if (partie.dernierJoueurPerdant + 1 > 1) {
 
-    for (unsigned int i = partie.dernierJoueurPerdant; i < partie.nbJoueurs; ++i)    {
+    for (unsigned int i = partie.dernierJoueurPerdant; i < partie.nbJoueurs; ++i) {
       if (partie.nouveauTour == VRAI) {
         i = 0;
         partie.nouveauTour = FAUX;
@@ -107,7 +111,12 @@ void nouvelleManche(Partie& partie) {
       cout << i + 1 << partie.ordre[i] << ", (";
       affichageTexte(partie);
       cout << ") > ";
-      int letter = ajoutLettre(partie, i);
+      int letter = 0;
+      if (partie.ordre[i] == HUMAIN)
+        letter = ajoutLettre(partie, i);
+      else {
+        letter = LettreRobot(partie, i);
+      }
       switch (letter) {
       case 0:
         if (trouve_Dico(partie, partie.mot)) {
@@ -223,8 +232,10 @@ unsigned int trouve_Dico(Partie& partie, char trouve_mot[])
 
   in >> setw(MAX_CHAR) >> Dico;
 
-  while (in)  {
+  while (in) {
     if (strcmp(trouve_mot, Dico) == 0 && strlen(Dico) > 2) {
+
+      in.close(); // on ferme le fichier
       return 1; // return 1 si le mot existe
     }
     in >> setw(MAX_CHAR) >> Dico;
@@ -236,7 +247,7 @@ unsigned int trouve_Dico(Partie& partie, char trouve_mot[])
 void afficheMotExiste(Partie& partie, unsigned int indice, char trouve_mot[]) {
   // compare le mot saisi par l'utilisateur et le dico
   cout << "le mot " << trouve_mot << " existe, ";
-  if (indice == partie.nbJoueurs)  {
+  if (indice == partie.nbJoueurs) {
     indice -= (partie.nbJoueurs);
   }
   cout << indice + 1 << partie.ordre[indice] << " prend un quart de singe" << endl;
@@ -263,11 +274,11 @@ void AffichemotExistePas(Partie& partie, unsigned int indice, char mot[]) {
  * @param ordre
  * @param indice
  */
-void saisirMotHumain(Partie& partie, unsigned int indice){
+void saisirMotHumain(Partie& partie, unsigned int indice) {
   char trouve_mot[MAX_CHAR];
   // le premier joueur doit demander au dernier joueur
-  if (indice == 0)  {
-    while (partie.ordre[indice] == HUMAIN || partie.ordre[indice] == ROBOT)    {
+  if (indice == 0) {
+    while (partie.ordre[indice] == HUMAIN || partie.ordre[indice] == ROBOT) {
       indice++;
     }
   }
@@ -294,22 +305,22 @@ void saisirMotHumain(Partie& partie, unsigned int indice){
  * @param indice
  *
  */
-int ajoutLettre(Partie& partie, unsigned int indice){
+int ajoutLettre(Partie& partie, unsigned int indice) {
   char mot;
   unsigned int i = 0;
-  if (partie.ordre[indice] == ROBOT && partie.taillemot == 0) {
-    LettreAleatoireRobot(partie);
-    return 0;
-  }
+  //if (partie.ordre[indice] == ROBOT && partie.taillemot == 0) {
+  //  LettreAleatoireRobot(partie);
+  //  return 0;
+  //}
   cin >> mot;
   if (mot == FINISH1)
     return 1;
   if (mot == FINISH2)
     return 2;
-  while (partie.mot[i] != NULL)  {
+  while (partie.mot[i] != NULL) {
     i++;
   }
-  if (partie.mot[i] == NULL)  {
+  if (partie.mot[i] == NULL) {
     partie.mot[i] = toupper(mot);
     partie.taillemot++;
   }
@@ -330,12 +341,13 @@ void abandonJoueur(Partie& partie, unsigned int indice) {
 *   @param joueur
 *   @param LettreRobot
 */
-void ajoutLettre(Partie& partie, char LettreRobot){
+void ajoutLettre(Partie& partie) {
   unsigned int i = 0;
-  while (partie.mot[i] != NULL)  {
+  while (partie.mot[i] != NULL) {
     i++;
   }
-  partie.mot[i] = LettreRobot;
+  partie.mot[i] = partie.motRobot[0];
+  partie.taillemot++;
 }
 
 /**
@@ -343,20 +355,71 @@ void ajoutLettre(Partie& partie, char LettreRobot){
  *
  * @param joueur
  */
-void LettreAleatoireRobot(Partie& partie){
+void LettreAleatoireRobot(Partie& partie) {
   srand(time(NULL));
   char LettreAleatoire = 'A' + rand() % 26;
   cout << LettreAleatoire << endl;
-  ajoutLettre(partie, LettreAleatoire);
+  partie.motRobot[0] = LettreAleatoire;
+  ajoutLettre(partie);
+}
+
+int trouve_mot_DICO(Partie& partie) {
+  ifstream in("ods4.txt"); // on ouvre le fichier
+
+  char motDico[MAX_CHAR];
+  char* motDico2;
+  motDico2 = new char[partie.taillemot + 1];
+  in >> setw(MAX_CHAR) >> motDico;
+  for (unsigned int i = 0; i < partie.taillemot; ++i) {
+    motDico2[i] = motDico[i];
+  }
+  cout << motDico2;
+  while (in) {
+    if (strcmp(motDico2, partie.mot) == 0) {
+      in.close(); // on ferme le fichier
+      return 1; // return 1 si le mot début de mot existe
+    }
+    in >> setw(MAX_CHAR) >> motDico;
+    for (unsigned int i = 0; i < partie.taillemot; ++i) {
+      motDico2[i] = motDico[i];
+    }
+  }
+  in.close(); // on ferme le fichier
+  return 0;   // return 0 si le mot existe pas
+}
+
+/**
+ * @brief Fonction qui renvoie un chiffre en fonction du robot... ( a completer).
+ *
+ * \param partie
+ * \param indice
+ * \return
+ */
+int LettreRobot(Partie& partie, unsigned int indice) {
+  unsigned int i = 0;
+  if (partie.taillemot == 0) {
+    LettreAleatoireRobot(partie);
+    return 0;
+  }
+  int num = trouve_mot_DICO(partie);
+  if (num == 0) {
+    cout << partie.motRobot[0] << endl;
+    ajoutLettre(partie);
+  }
+  else {
+    cout << "?" << endl;
+  }
+  return num;
+
 }
 
 /**
  * @brief Afficher le mot formé.
  * @param joueur
  */
-void affichageTexte(Partie& partie){
+void affichageTexte(Partie& partie) {
   unsigned int i = 0;
-  while (partie.mot[i] != NULL)  {
+  while (partie.mot[i] != NULL) {
     cout << partie.mot[i];
     i++;
   }
@@ -367,10 +430,10 @@ void affichageTexte(Partie& partie){
  * @param pl[]
  * @param joueur
  */
-void mancheJeu(Partie& partie){
+void mancheJeu(Partie& partie) {
 
-  while (partie.taillemot < MAX_CHAR)  {
-    for (unsigned int i = 0; i < partie.nbJoueurs; ++i)    {
+  while (partie.taillemot < MAX_CHAR) {
+    for (unsigned int i = 0; i < partie.nbJoueurs; ++i) {
       if (partie.nouveauTour == VRAI) {
         i = 0;
         partie.nouveauTour = FAUX;
@@ -378,9 +441,16 @@ void mancheJeu(Partie& partie){
       cout << i + 1 << partie.ordre[i] << ", (";
       affichageTexte(partie);
       cout << ") > ";
-      int letter = ajoutLettre(partie, i);
+
+      int letter = 0;
+      if (partie.ordre[i] == HUMAIN)
+        letter = ajoutLettre(partie, i);
+      else {
+        letter = LettreRobot(partie, i);
+      }
       switch (letter) {
       case 0:
+
         if (trouve_Dico(partie, partie.mot)) {
           afficheMotExiste(partie, i, partie.mot);
           nouvelleManche(partie);
@@ -394,14 +464,16 @@ void mancheJeu(Partie& partie){
         if (verifMot(partie, partie.motJoueurDeviner, i)) {
           debutMotFaux(partie, i, partie.motJoueurDeviner);
           nouvelleManche(partie);
-        } else if (trouve_Dico(partie, partie.motJoueurDeviner)) {
+        }
+        else if (trouve_Dico(partie, partie.motJoueurDeviner)) {
           if (i == 0)
             afficheMotExiste(partie, partie.nbJoueurs, partie.motJoueurDeviner);
           else
             afficheMotExiste(partie, i, partie.motJoueurDeviner);
 
           nouvelleManche(partie);
-        } else {
+        }
+        else {
           AffichemotExistePas(partie, i, partie.motJoueurDeviner);
           nouvelleManche(partie);
         }
@@ -416,7 +488,7 @@ void mancheJeu(Partie& partie){
     }
   }
 }
-int main(int argc, char* argv[]){
+int main(int argc, char* argv[]) {
   Partie p;
   init(p, argv[1]);
   mancheJeu(p);
