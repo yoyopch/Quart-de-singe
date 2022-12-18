@@ -352,17 +352,22 @@ int trouve_mot_DICO(Partie& partie) {
   
   while (in) {
     if (strcmp(motDico2, partie.mot) == 0 ) {
+      if(strlen(motDico)==2){
+        in >> setw(MAX_CHAR) >> motDico;
+        for (unsigned int i = 0; i < partie.taillemot; ++i) {
+          motDico2[i] = motDico[i];
+          motExiste[i]=motDico[i];
+        }
+      }
       motExiste[partie.taillemot]=motDico[partie.taillemot];
       
       if(strcmp(motDico, motExiste)==0){
         p=strstr(motDico, motExiste);
         
-        
         while(p){
           in >> setw(MAX_CHAR) >> motDico;
           
           p=strstr(motDico, motExiste);
-
         }
         partie.motRobot[0]=motDico[partie.taillemot];
         in.close(); // on ferme le fichier
@@ -375,7 +380,7 @@ int trouve_mot_DICO(Partie& partie) {
     in >> setw(MAX_CHAR) >> motDico;
     for (unsigned int i = 0; i < partie.taillemot; ++i) {
       motDico2[i] = motDico[i];
-      motExiste[i]=motDico[i];
+      motExiste[i] = motDico[i];
     }
   }
   in.close(); // on ferme le fichier
