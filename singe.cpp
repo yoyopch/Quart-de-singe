@@ -249,6 +249,36 @@ void AffichemotExistePas(Partie& partie, unsigned int indice, char mot[]) {
 }
 
 /**
+ * @brief Rendre un mot pour le robot.
+ *
+ * \param partie
+ */
+void trouve_Dico_Robot(Partie& partie) {
+  ifstream in("ods4.txt"); // on ouvre le fichier
+  char motDico[MAX_CHAR];
+  in >> setw(MAX_CHAR) >> motDico;
+  while (strlen(motDico) <= 2) in >> setw(MAX_CHAR) >> motDico;
+  while (strncmp(motDico, partie.mot, partie.taillemot) != 0) {
+    in >> setw(MAX_CHAR) >> motDico;
+    if (!in) {
+      resetMotJoueur(partie);
+      strcpy(partie.motJoueurDeviner, partie.mot);
+      cout << partie.mot << endl;
+      in.close();
+      return;
+    }
+    while (strlen(motDico) <= 2)in >> setw(MAX_CHAR) >> motDico;
+
+  }
+
+  resetMotJoueur(partie);
+  strcpy(partie.motJoueurDeviner, motDico);
+  cout << motDico << endl;
+  in.close();
+}
+
+
+/**
  * @brief vérifier si le mot formé existe.
  */
 void saisirMotHumain(Partie& partie, unsigned int indice) {
@@ -261,19 +291,27 @@ void saisirMotHumain(Partie& partie, unsigned int indice) {
   }
   cout << indice << partie.ordre[indice - 1];
   cout << ", saisir le mot > ";
-  cin >> trouve_mot;
-  /*assert(strlen(trouve_mot) < 26);*/
-  if (strlen(trouve_mot) >= 26) {
-    cerr << "Le mot saisi depasse la limite de caracteres." << endl;
-    exit(0);
+  if (partie.ordre[indice - 1] == HUMAIN) {
+    cin >> trouve_mot;
+    /*assert(strlen(trouve_mot) < 26);*/
+    if (strlen(trouve_mot) >= 26) {
+      cerr << "Le mot saisi depasse la limite de caracteres." << endl;
+      exit(0);
+    }
+    for (unsigned int i = 0; i < strlen(trouve_mot); ++i) {
+      trouve_mot[i] = toupper(trouve_mot[i]);
+    }
+    resetMotJoueur(partie);
+    for (int i = 0; i < strlen(trouve_mot); ++i) {
+      partie.motJoueurDeviner[i] = trouve_mot[i];
+    }
+    return;
   }
-  for (unsigned int i = 0; i < strlen(trouve_mot); ++i) {
-    trouve_mot[i] = toupper(trouve_mot[i]);
+  else {
+    trouve_Dico_Robot(partie);
+    return;
   }
-  resetMotJoueur(partie);
-  for (int i = 0; i < strlen(trouve_mot); ++i) {
-    partie.motJoueurDeviner[i] = trouve_mot[i];
-  }
+
 }
 /**
  * @brief Ajoute une lettre au mot recherché.
@@ -335,22 +373,25 @@ void LettreAleatoireRobot(Partie& partie) {
 }
 
 int trouve_mot_DICO(Partie& partie) {
+  /*if (!trouve_Dico(partie, partie.mot))return 1;*/
   ifstream in("ods4.txt"); // on ouvre le fichier
 
   char motDico[MAX_CHAR];
   char* motDico2 = new char[partie.taillemot];
+
   char* motExiste = new char[partie.taillemot + 1];
   char* p;
 
   in >> setw(MAX_CHAR) >> motDico;
-  while (strlen(motDico) <= partie.taillemot)in >> setw(MAX_CHAR) >> motDico;
+  while (strlen(motDico) <= partie.taillemot || (strlen(motDico) <= 2))in >> setw(MAX_CHAR) >> motDico;
   for (unsigned int i = 0; i < partie.taillemot; ++i) {
     motDico2[i] = motDico[i];
     motExiste[i] = motDico[i];
   }
 
   while (in) {
-    if (strcmp(motDico2, partie.mot) == 0) {
+
+    if (strncmp(motDico2, partie.mot, partie.taillemot) == 0) {
       /*if (strlen(motDico) == 2) {
         in >> setw(MAX_CHAR) >> motDico;
         if (strlen(motDico) <= 2)in >> setw(MAX_CHAR) >> motDico;
@@ -361,29 +402,35 @@ int trouve_mot_DICO(Partie& partie) {
         break;
       }*/
       motExiste[partie.taillemot] = motDico[partie.taillemot];
+      unsigned int taille = strlen(motDico);
+      if (strncmp(motDico, motExiste, taille) == 0) {
 
-      if (strcmp(motDico, motExiste) == 0) {
-        p = strstr(motDico, motExiste);
+        while (strncmp(motDico, motExiste, taille) == 0) {
 
-        while (p) {
           in >> setw(MAX_CHAR) >> motDico;
-          while (strlen(motDico) <= partie.taillemot)in >> setw(MAX_CHAR) >> motDico;
-          p = strstr(motDico, motExiste);
+          if (!in)break;
+          while (strlen(motDico) <= partie.taillemot || (strlen(motDico) <= 2))in >> setw(MAX_CHAR) >> motDico;
+          if (!in)break;
+
         }
         partie.motRobot[0] = motDico[partie.taillemot];
         in.close(); // on ferme le fichier
         delete[]motDico2;
         delete[]motExiste;
-        return 0; // return 1 si le mot début de mot existe
+        return 0; // return 0 si le mot début de mot existe
       }
       partie.motRobot[0] = motDico[partie.taillemot];
       in.close(); // on ferme le fichier
       delete[]motDico2;
       delete[]motExiste;
-      return 0; // return 1 si le mot début de mot existe
+      return 0; // return 0 si le mot début de mot existe
     }
     in >> setw(MAX_CHAR) >> motDico;
-    while (strlen(motDico) <= partie.taillemot)in >> setw(MAX_CHAR) >> motDico;
+    if (!in)break;
+    while (strlen(motDico) <= partie.taillemot || (strlen(motDico) <= 2)) {
+      in >> setw(MAX_CHAR) >> motDico;
+      if (!in)break;
+    }
     for (unsigned int i = 0; i < partie.taillemot; ++i) {
       motDico2[i] = motDico[i];
       motExiste[i] = motDico[i];
@@ -392,7 +439,7 @@ int trouve_mot_DICO(Partie& partie) {
   in.close(); // on ferme le fichier
   delete[]motDico2;
   delete[]motExiste;
-  return 1;   // return 0 si le mot existe pas
+  return 1;   // return 1 si le mot existe pas
 }
 
 /**
