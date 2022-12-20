@@ -11,7 +11,7 @@ enum { MAX_CHAR = 26 };
 #define FINISH2 '!'
 #define HUMAIN 'H'
 #define ROBOT 'R'
-
+#define CHAINE_VIDE '\0'
 #define VRAI 1
 #define FAUX 0
 typedef int BOOL;
@@ -48,7 +48,7 @@ void resetMotJoueur(Partie& partie);
 
 void resetMotJoueur(Partie& partie) {
   for (unsigned int i = 0; i < MAX_CHAR; ++i)
-    partie.motJoueurDeviner[i] = NULL;
+    partie.motJoueurDeviner[i] = CHAINE_VIDE;
 }
 /**
  * @brief Initialiser les structure.
@@ -56,8 +56,8 @@ void resetMotJoueur(Partie& partie) {
 void init(Partie& partie, char pl[]) {
 
   for (unsigned int i = 0; i < MAX_CHAR; i++) {
-    partie.mot[i] = NULL;
-    partie.motJoueurDeviner[i] = NULL;
+    partie.mot[i] = CHAINE_VIDE;
+    partie.motJoueurDeviner[i] = CHAINE_VIDE;
   }
   partie.taillemot = 0;
   partie.nbJoueurs = 0;
@@ -92,7 +92,7 @@ void init(Partie& partie, char pl[]) {
  */
 void nouvelleManche(Partie& partie) {
   for (unsigned int i = 0; i < MAX_CHAR; i++) {
-    partie.mot[i] = NULL;
+    partie.mot[i] = CHAINE_VIDE;
     partie.taillemot = 0;
   }
 
@@ -250,8 +250,6 @@ void AffichemotExistePas(Partie& partie, unsigned int indice, char mot[]) {
 
 /**
  * @brief Rendre un mot pour le robot.
- *
- * \param partie
  */
 void trouve_Dico_Robot(Partie& partie) {
   ifstream in("ods4.txt"); // on ouvre le fichier
@@ -329,10 +327,10 @@ int ajoutLettre(Partie& partie, unsigned int indice) {
     return 1;
   if (mot == FINISH2)
     return 2;
-  while (partie.mot[i] != NULL) {
+  while (partie.mot[i] != CHAINE_VIDE) {
     i++;
   }
-  if (partie.mot[i] == NULL) {
+  if (partie.mot[i] == CHAINE_VIDE) {
     partie.mot[i] = toupper(mot);
     partie.taillemot++;
   }
@@ -353,12 +351,12 @@ void abandonJoueur(Partie& partie, unsigned int indice) {
  */
 void ajoutLettre(Partie& partie) {
   unsigned int i = 0;
-  while (partie.mot[i] != NULL) {
+  while (partie.mot[i] != CHAINE_VIDE) {
     i++;
   }
   partie.taillemot++;
   partie.mot[i] = partie.motRobot[0];
-  partie.motRobot[0] = NULL;
+  partie.motRobot[0] = CHAINE_VIDE;
 }
 
 /**
@@ -380,7 +378,6 @@ int trouve_mot_DICO(Partie& partie) {
   char* motDico2 = new char[partie.taillemot];
 
   char* motExiste = new char[partie.taillemot + 1];
-  char* p;
 
   in >> setw(MAX_CHAR) >> motDico;
   while (strlen(motDico) <= partie.taillemot || (strlen(motDico) <= 2))in >> setw(MAX_CHAR) >> motDico;
@@ -467,7 +464,7 @@ int LettreRobot(Partie& partie, unsigned int indice) {
  */
 void affichageTexte(const Partie& partie) {
   unsigned int i = 0;
-  while (partie.mot[i] != NULL) {
+  while (partie.mot[i] != CHAINE_VIDE) {
     cout << partie.mot[i];
     i++;
   }
