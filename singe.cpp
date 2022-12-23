@@ -7,7 +7,7 @@
 
 using namespace std;
 
-enum { MAX_CHAR = 26, MAX_ENTREE = 1 };
+enum { MAX_CHAR = 26 };
 #define FINISH1 '?'
 #define FINISH2 '!'
 #define HUMAIN 'H'
@@ -34,6 +34,8 @@ struct Partie {
 int tailleDico = 0;
 char** pDico = NULL;
 
+const char motConnus[]="ESARTINULODC";
+
 void mancheJeu(Partie& partie);
 void affichageTexte(const Partie& partie);
 void LettreAleatoireRobot(Partie& partie);
@@ -53,7 +55,7 @@ int LettreRobot(Partie& partie, unsigned int indice);
 void resetMotJoueur(Partie& partie);
 void freeDico();
 char** buildDico(int& oMaxTaille);
-
+int verifDebutMot(Partie& partie, char mot[]);
 
 
 void freeDico() {
@@ -269,8 +271,6 @@ void debutMotFaux(Partie& partie, unsigned int indice, char mot[]) {
  */
 unsigned int trouve_Dico(Partie& partie, char trouve_mot[])
 {
-  if(partie.taillemot <= 2)
-    return 0;
 
   for (int i = 0; i < strlen(trouve_mot); ++i)
     trouve_mot[i] = toupper(trouve_mot[i]);
@@ -325,8 +325,8 @@ void trouve_Dico_Robot(Partie& partie) {
   //char motDico[MAX_CHAR];
   //in >> setw(MAX_CHAR) >> motDico;
   //while (strlen(motDico) <= 2) in >> setw(MAX_CHAR) >> motDico;
-  int i = 0;
-  for (i; i < tailleDico; ++i) {
+  int i=0;
+  for (i=0; i < tailleDico; ++i) {
     if (strncmp(pDico[i], partie.mot, partie.taillemot) == 0) {
       resetMotJoueur(partie);
       strcpy(partie.motJoueurDeviner, pDico[i]);
@@ -451,10 +451,12 @@ void LettreAleatoireRobot(Partie& partie) {
   ajoutLettre(partie);
 }
 
+/**
+ * @biref Verifier si le debut du mot existe dans le dictionnaire
+ */
+unsigned int motDebutExiste(Partie& partie, const char mot[]) {
 
-unsigned int motDebutExiste(Partie& partie, char mot[]) {
-
-  for (int i = 0; i < tailleDico; i++) {
+  for (int i = 0; i < tailleDico; ++i) {
     char* motDico = pDico[i];
     if (strncmp(mot, motDico, partie.taillemot + 1) == 0) {
       return 1;
@@ -465,8 +467,9 @@ unsigned int motDebutExiste(Partie& partie, char mot[]) {
 }
 
 
-unsigned int verifDebutMot(Partie& partie, char mot[]) {
-  char lettreRand = 'A' + rand() % 26;
+int verifDebutMot(Partie& partie, char mot[]) {
+  lettreAleatoire:
+  char lettreRand = 'A' + rand() % MAX_CHAR;
   mot[partie.taillemot] = lettreRand;
   partie.motRobot[0] = lettreRand;
 
@@ -474,26 +477,36 @@ unsigned int verifDebutMot(Partie& partie, char mot[]) {
     cout << "verifDebutMot lettreRand =" << lettreRand << endl;
 
   unsigned int motExiste = motDebutExiste(partie, mot);
+  // voir si il y a un mot dans le dictionnaire qui commencence par "mot"
   if (motExiste) {
-    if (TRACE)
+    
+    if (TRACE){
       cout << "verifDebutMot motExiste =" << motExiste << endl;
+    }
+      
 
     int motTrouve = trouve_Dico(partie, mot);
     if (motTrouve) {
-      if (TRACE)
+      
+      if (TRACE){
         cout << "verifDebutMot motTrouve =" << motTrouve << endl;
-
-      verifDebutMot(partie, mot);
-    }
-    else {
-      if (TRACE)
-        cout << "verifDebutMot return =" << 1 << endl;
-
+      }
+      
+      int indice = rand()% (9+1);
+      partie.motRobot[0]=motConnus[indice];
       return 1;
     }
-  }
-  else {
-    verifDebutMot(partie, mot);
+    else{
+      
+      if (TRACE){
+        cout << "verifDebutMot return =" << 1 << endl;
+      }
+      
+      return 1;
+    }
+  }else{
+    goto lettreAleatoire;
+//    verifDebutMot(partie, mot);
   }
 }
 
@@ -508,19 +521,23 @@ int trouve_mot_DICO(Partie& partie) {
     if (strlen(pDico[i]) > partie.taillemot) {
       strncpy(motDico, pDico[i], partie.taillemot);
       if (strncmp(motDico, partie.mot, partie.taillemot) == 0) {
+        
+        if(TRACE)
+          cout << "motDico = " << motDico << endl;
+        
         int motExiste = verifDebutMot(partie, motDico);
         if (motExiste) {
           delete[] motDico;
+          return 0;
+        }else{
           return 0;
         }
       }
     }
     i++;
   }
-  if (i == tailleDico) {
     delete[]motDico;
     return 1;   // return 1 si le mot existe pas
-  }
 }
 
 /**
