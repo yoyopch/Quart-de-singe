@@ -468,47 +468,49 @@ unsigned int motDebutExiste(Partie& partie, const char mot[]) {
 
 
 int verifDebutMot(Partie& partie, char mot[]) {
-  lettreAleatoire:
+  
   char lettreRand = 'A' + rand() % MAX_CHAR;
-  mot[partie.taillemot] = lettreRand;
-  partie.motRobot[0] = lettreRand;
+    mot[partie.taillemot] = lettreRand;
+    partie.motRobot[0] = lettreRand;
 
-  if (TRACE)
-    cout << "verifDebutMot lettreRand =" << lettreRand << endl;
+    if (TRACE)
+      cout << "verifDebutMot lettreRand =" << lettreRand << endl;
 
-  unsigned int motExiste = motDebutExiste(partie, mot);
-  // voir si il y a un mot dans le dictionnaire qui commencence par "mot"
-  if (motExiste) {
+    unsigned int motExiste = motDebutExiste(partie, mot);
+    // voir si il y a un mot dans le dictionnaire qui commencence par "mot"
+    if (motExiste) {
+      
+      if (TRACE){
+        cout << "verifDebutMot motExiste =" << motExiste << endl;
+      }
+        
+
+      int motTrouve = trouve_Dico(partie, mot);
+      if (motTrouve) {
+        
+        if (TRACE){
+          cout << "verifDebutMot motTrouve =" << motTrouve << endl;
+        }
+        
+        int indice = rand()% (9+1);
+        partie.motRobot[0]=motConnus[indice];
+        return 1;
+      }
+      else{
+        
+        if (TRACE){
+          cout << "verifDebutMot return =" << 1 << endl;
+        }
+        
+        return 1;
+      }
+    }else{
+      verifDebutMot(partie, mot);
+    }
+
+  return 0;
     
-    if (TRACE){
-      cout << "verifDebutMot motExiste =" << motExiste << endl;
-    }
-      
-
-    int motTrouve = trouve_Dico(partie, mot);
-    if (motTrouve) {
-      
-      if (TRACE){
-        cout << "verifDebutMot motTrouve =" << motTrouve << endl;
-      }
-      
-      int indice = rand()% (9+1);
-      partie.motRobot[0]=motConnus[indice];
-      return 1;
-    }
-    else{
-      
-      if (TRACE){
-        cout << "verifDebutMot return =" << 1 << endl;
-      }
-      
-      return 1;
-    }
-  }else{
-    goto lettreAleatoire;
-//    verifDebutMot(partie, mot);
   }
-}
 
 
 
@@ -526,6 +528,9 @@ int trouve_mot_DICO(Partie& partie) {
           cout << "motDico = " << motDico << endl;
         
         int motExiste = verifDebutMot(partie, motDico);
+        while(!motExiste){
+          motExiste = verifDebutMot(partie, motDico);
+        }
         if (motExiste) {
           delete[] motDico;
           return 0;
