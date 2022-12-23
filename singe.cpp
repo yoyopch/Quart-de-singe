@@ -17,8 +17,7 @@ enum { MAX_CHAR = 26, MAX_ENTREE = 1 };
 #define FAUX 0
 typedef int BOOL;
 
-
-
+#define TRACE 0
 
 struct Partie {
   char mot[MAX_CHAR];
@@ -270,11 +269,24 @@ void debutMotFaux(Partie& partie, unsigned int indice, char mot[]) {
  */
 unsigned int trouve_Dico(Partie& partie, char trouve_mot[])
 {
+  if(partie.taillemot <= 2)
+    return 0;
+
   for (int i = 0; i < strlen(trouve_mot); ++i)
     trouve_mot[i] = toupper(trouve_mot[i]);
 
+  if (TRACE)
+    cout << "trouve_Dico trouve_mot = " << trouve_mot << endl;
+
   for (int i = 0; i < tailleDico; i++) {
-    if (strcmp(trouve_mot, pDico[i]) == 0) {
+    char* pmot = pDico[i];
+    if (TRACE)
+      cout << "trouve_Dico pmot = " << pmot << " index = " << i << endl;
+
+    if (strcmp(trouve_mot, pmot) == 0) {
+      if (TRACE)
+        cout << "trouve_Dico trouve_mot = pmot" << endl;
+
       return 1;
     }
   }
@@ -378,14 +390,27 @@ int ajoutLettre(Partie& partie, unsigned int indice) {
   //  return 0;
   //}
   cin >> mot;
-  cin.ignore(MAX_ENTREE, '\n');
-  if (mot == FINISH1)
+  cin.ignore(INT_MAX, '\n');
+  if(TRACE)
+    cout << "ajoutLettre mot: " << mot << endl;
+
+  if (mot == FINISH1) {
+    if (TRACE)
+      cout << "ajoutLettre mot == FINISH1" << endl;
     return 1;
-  if (mot == FINISH2)
+  }
+  if (mot == FINISH2) {
+    if (TRACE)
+      cout << "ajoutLettre mot == FINISH2" << endl;
+
     return 2;
+  }
   while (partie.mot[i] != CHAINE_VIDE) {
     i++;
   }
+  if (TRACE)
+    cout << "ajoutLettre i = " << i << endl;
+
   if (partie.mot[i] == CHAINE_VIDE) {
     partie.mot[i] = toupper(mot);
     partie.taillemot++;
@@ -445,13 +470,25 @@ unsigned int verifDebutMot(Partie& partie, char mot[]) {
   mot[partie.taillemot] = lettreRand;
   partie.motRobot[0] = lettreRand;
 
+  if (TRACE)
+    cout << "verifDebutMot lettreRand =" << lettreRand << endl;
+
   unsigned int motExiste = motDebutExiste(partie, mot);
   if (motExiste) {
+    if (TRACE)
+      cout << "verifDebutMot motExiste =" << motExiste << endl;
+
     int motTrouve = trouve_Dico(partie, mot);
     if (motTrouve) {
+      if (TRACE)
+        cout << "verifDebutMot motTrouve =" << motTrouve << endl;
+
       verifDebutMot(partie, mot);
     }
     else {
+      if (TRACE)
+        cout << "verifDebutMot return =" << 1 << endl;
+
       return 1;
     }
   }
