@@ -17,7 +17,7 @@ enum { MAX_CHAR = 26 };
 #define FAUX 0
 typedef int BOOL;
 
-#define TRACE 0
+#define TRACE 1
 
 struct Partie {
   char mot[MAX_CHAR];
@@ -55,7 +55,7 @@ int LettreRobot(Partie& partie, unsigned int indice);
 void resetMotJoueur(Partie& partie);
 void freeDico();
 char** buildDico(int& oMaxTaille);
-int verifDebutMot(Partie& partie, char mot[]);
+int verifDebutMot(Partie& partie, char mot[], unsigned int& nbNombre);
 
 
 void freeDico() {
@@ -136,7 +136,7 @@ void init(Partie& partie, char pl[]) {
   partie.nbJoueurs = 0;
   partie.dernierJoueurPerdant = -1;
   partie.nouveauTour = FAUX;
-  partie.nbJoueurs = strlen(pl);
+  partie.nbJoueurs = (unsigned int)strlen(pl);
   // pl est la chaine de caractères passée en paramètre de la fonction, et qui correspond à argv[1]
   if (partie.nbJoueurs < 2) {
     cerr << "Pour jouer au quart de singe, il faut etre au moins 2 joueurs." << endl;
@@ -280,12 +280,10 @@ unsigned int trouve_Dico(Partie& partie, char trouve_mot[])
 
   for (int i = 0; i < tailleDico; i++) {
     char* pmot = pDico[i];
-    if (TRACE)
-      cout << "trouve_Dico pmot = " << pmot << " index = " << i << endl;
 
     if (strcmp(trouve_mot, pmot) == 0) {
       if (TRACE)
-        cout << "trouve_Dico trouve_mot = pmot" << endl;
+        cout << "trouve_Dico mot trouve = " << pmot << endl;
 
       return 1;
     }
@@ -467,48 +465,48 @@ unsigned int motDebutExiste(Partie& partie, const char mot[]) {
 }
 
 
-int verifDebutMot(Partie& partie, char mot[]) {
-  
+int verifDebutMot(Partie& partie, char mot[], unsigned int& nbNombre) {
+  unsigned int oreturn = 0;
   char lettreRand = 'A' + rand() % MAX_CHAR;
+
     mot[partie.taillemot] = lettreRand;
     partie.motRobot[0] = lettreRand;
 
+    if(nbNombre == 26)
+      return 1;
+  
     if (TRACE)
-      cout << "verifDebutMot lettreRand =" << lettreRand << endl;
+      cout << "verifDebutMot lettreRand = " << lettreRand << " et nbNombre = " << nbNombre <<endl;
 
     unsigned int motExiste = motDebutExiste(partie, mot);
     // voir si il y a un mot dans le dictionnaire qui commencence par "mot"
     if (motExiste) {
       
-      if (TRACE){
-        cout << "verifDebutMot motExiste =" << motExiste << endl;
-      }
+      if (TRACE)
+        cout << "verifDebutMot motDebutExiste motExiste =" << motExiste << endl;
         
-
       int motTrouve = trouve_Dico(partie, mot);
       if (motTrouve) {
-        
-        if (TRACE){
+        if (TRACE)
           cout << "verifDebutMot motTrouve =" << motTrouve << endl;
-        }
-        
-        int indice = rand()% (9+1);
-        partie.motRobot[0]=motConnus[indice];
-        return 1;
+        nbNombre++;
+        oreturn = verifDebutMot(partie, mot, nbNombre);
       }
       else{
         
-        if (TRACE){
-          cout << "verifDebutMot return =" << 1 << endl;
-        }
+        if (TRACE)
+          cout << "verifDebutMot return = " << 1 << endl;
         
         return 1;
       }
     }else{
-      verifDebutMot(partie, mot);
+      nbNombre++;
+      oreturn = verifDebutMot(partie, mot, nbNombre);
     }
-
-  return 0;
+    if (TRACE)
+      cout << "verifDebutMot oreturn =" << oreturn << endl;
+  
+  return oreturn;
     
   }
 
@@ -526,11 +524,9 @@ int trouve_mot_DICO(Partie& partie) {
         
         if(TRACE)
           cout << "motDico = " << motDico << endl;
+        unsigned int Compteur = 0;
+        int motExiste = verifDebutMot(partie, motDico, Compteur);
         
-        int motExiste = verifDebutMot(partie, motDico);
-        while(!motExiste){
-          motExiste = verifDebutMot(partie, motDico);
-        }
         if (motExiste) {
           delete[] motDico;
           return 0;
@@ -638,7 +634,7 @@ void mancheJeu(Partie& partie) {
   }
 }
 int main(int argc, char* argv[]) {
-  srand(time(NULL));
+  srand((unsigned int)time(NULL));
   pDico = buildDico(tailleDico);
   Partie p;
   init(p, argv[1]);
