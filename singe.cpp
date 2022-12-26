@@ -17,7 +17,7 @@ enum { MAX_CHAR = 26 };
 #define FAUX 0
 typedef int BOOL;
 
-#define TRACE 0
+#define TRACE 1
 
 struct Partie {
   char mot[MAX_CHAR];
@@ -34,7 +34,7 @@ struct Partie {
 int tailleDico = 0;
 char** pDico = NULL;
 
-const char motConnus[]="ESARTINULODC";
+const char motConnus[] = "ESARTINULODC";
 
 void mancheJeu(Partie& partie);
 void affichageTexte(const Partie& partie);
@@ -323,8 +323,8 @@ void trouve_Dico_Robot(Partie& partie) {
   //char motDico[MAX_CHAR];
   //in >> setw(MAX_CHAR) >> motDico;
   //while (strlen(motDico) <= 2) in >> setw(MAX_CHAR) >> motDico;
-  int i=0;
-  for (i=0; i < tailleDico; ++i) {
+  int i = 0;
+  for (i = 0; i < tailleDico; ++i) {
     if (strncmp(pDico[i], partie.mot, partie.taillemot) == 0) {
       resetMotJoueur(partie);
       strcpy(partie.motJoueurDeviner, pDico[i]);
@@ -389,7 +389,7 @@ int ajoutLettre(Partie& partie, unsigned int indice) {
   //}
   cin >> mot;
   cin.ignore(INT_MAX, '\n');
-  if(TRACE)
+  if (TRACE)
     cout << "ajoutLettre mot: " << mot << endl;
 
   if (mot == FINISH1) {
@@ -464,51 +464,102 @@ unsigned int motDebutExiste(Partie& partie, const char mot[]) {
   return 0;
 }
 
+char* listeLettre = new char[MAX_CHAR];
+
+
+void resetListeLettre() {
+  for (int i = 0; i < MAX_CHAR; ++i) {
+    listeLettre[i] = CHAINE_VIDE;
+  }
+}
+
+
+int VerifLettreUtil(char lettre) {
+  for (int i = 0; i < MAX_CHAR; ++i) {
+    if (listeLettre[i] == lettre) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+
+
+int AjoutLettreUtil(char lettre) {
+
+  unsigned int i = 0;
+  while (listeLettre[i] != CHAINE_VIDE) {
+    i++;
+  }
+  if (VerifLettreUtil(lettre)) {
+    return 1;
+  }
+  else {
+    listeLettre[i] = lettre;
+    return 0;
+  }
+
+
+}
+
+
+
+
+
 
 int verifDebutMot(Partie& partie, char mot[], unsigned int& nbNombre) {
   unsigned int oreturn = 0;
   char lettreRand = 'A' + rand() % MAX_CHAR;
+  int lettreExiste = AjoutLettreUtil(lettreRand);
+  // lettreExiste == 1 si la lettre a deja été générée
+  while (lettreExiste) {
+    lettreRand = 'A' + rand() % MAX_CHAR;
+    lettreExiste = AjoutLettreUtil(lettreRand);
+  }
 
-    mot[partie.taillemot] = lettreRand;
-    partie.motRobot[0] = lettreRand;
 
-    if(nbNombre == 26)
-      return 1;
-  
+
+  mot[partie.taillemot] = lettreRand;
+  partie.motRobot[0] = lettreRand;
+
+  if (nbNombre == 26)
+    return 1;
+
+  if (TRACE)
+    cout << "verifDebutMot lettreRand = " << lettreRand << " et nbNombre = " << nbNombre << endl;
+
+  unsigned int motExiste = motDebutExiste(partie, mot);
+  // voir si il y a un mot dans le dictionnaire qui commencence par "mot"
+  if (motExiste) {
+
     if (TRACE)
-      cout << "verifDebutMot lettreRand = " << lettreRand << " et nbNombre = " << nbNombre <<endl;
+      cout << "verifDebutMot motDebutExiste motExiste =" << motExiste << endl;
 
-    unsigned int motExiste = motDebutExiste(partie, mot);
-    // voir si il y a un mot dans le dictionnaire qui commencence par "mot"
-    if (motExiste) {
-      
+    int motTrouve = trouve_Dico(partie, mot);
+    if (motTrouve) {
       if (TRACE)
-        cout << "verifDebutMot motDebutExiste motExiste =" << motExiste << endl;
-        
-      int motTrouve = trouve_Dico(partie, mot);
-      if (motTrouve) {
-        if (TRACE)
-          cout << "verifDebutMot motTrouve =" << motTrouve << endl;
-        nbNombre++;
-        oreturn = verifDebutMot(partie, mot, nbNombre);
-      }
-      else{
-        
-        if (TRACE)
-          cout << "verifDebutMot return = " << 1 << endl;
-        
-        return 1;
-      }
-    }else{
+        cout << "verifDebutMot motTrouve =" << motTrouve << endl;
       nbNombre++;
       oreturn = verifDebutMot(partie, mot, nbNombre);
     }
-    if (TRACE)
-      cout << "verifDebutMot oreturn =" << oreturn << endl;
-  
-  return oreturn;
-    
+    else {
+
+      if (TRACE)
+        cout << "verifDebutMot return = " << 1 << endl;
+
+      return 1;
+    }
   }
+  else {
+    nbNombre++;
+    oreturn = verifDebutMot(partie, mot, nbNombre);
+  }
+  if (TRACE)
+    cout << "verifDebutMot oreturn =" << oreturn << endl;
+
+  return oreturn;
+
+}
 
 
 
@@ -516,29 +567,35 @@ int trouve_mot_DICO(Partie& partie) {
 
   char* motDico = new char[partie.taillemot + 1];
 
+
+  resetListeLettre();
+
+
   int i = 0;
   while (i < tailleDico) {
     if (strlen(pDico[i]) > partie.taillemot) {
       strncpy(motDico, pDico[i], partie.taillemot);
       if (strncmp(motDico, partie.mot, partie.taillemot) == 0) {
-        
-        if(TRACE)
+
+        if (TRACE)
           cout << "motDico = " << motDico << endl;
         unsigned int Compteur = 0;
         int motExiste = verifDebutMot(partie, motDico, Compteur);
-        
+
         if (motExiste) {
           delete[] motDico;
           return 0;
-        }else{
+        }
+        else {
           return 0;
         }
       }
     }
     i++;
   }
-    delete[]motDico;
-    return 1;   // return 1 si le mot existe pas
+  delete[]motDico;
+
+  return 1;   // return 1 si le mot existe pas
 }
 
 /**
