@@ -198,14 +198,17 @@ void nouvelleManche(Partie& partie) {
           debutMotFaux(partie, i, partie.motJoueurDeviner);
           nouvelleManche(partie);
         }
-        else
-          if (trouve_Dico(partie, partie.motJoueurDeviner)) {
-            if (i == 0)
-              afficheMotExiste(partie, partie.nbJoueurs - 1, partie.motJoueurDeviner);
-            else
-              afficheMotExiste(partie, i, partie.motJoueurDeviner);
-            nouvelleManche(partie);
-          }
+        else if (trouve_Dico(partie, partie.motJoueurDeviner)) {
+          if (i == 0)
+            afficheMotExiste(partie, partie.nbJoueurs - 1, partie.motJoueurDeviner);
+          else
+            afficheMotExiste(partie, i, partie.motJoueurDeviner);
+          nouvelleManche(partie);
+        }
+        else {
+          AffichemotExistePas(partie, i, partie.motJoueurDeviner);
+          nouvelleManche(partie);
+        }
         break;
       case 2:
         //si le joueur a entré '!'
