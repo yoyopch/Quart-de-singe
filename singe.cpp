@@ -697,7 +697,7 @@ void mancheJeu(Partie& partie) {
         }
         else if (trouve_Dico(partie, partie.motJoueurDeviner)) {
           if (i == 0)
-            afficheMotExiste(partie, partie.nbJoueurs, partie.motJoueurDeviner);
+            afficheMotExiste(partie, partie.nbJoueurs - 1, partie.motJoueurDeviner);
           else
             afficheMotExiste(partie, i, partie.motJoueurDeviner);
 
