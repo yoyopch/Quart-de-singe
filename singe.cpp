@@ -17,7 +17,7 @@ enum { MAX_CHAR = 26 };
 #define FAUX 0
 typedef int BOOL;
 
-#define TRACE 1
+#define TRACE 0
 
 struct Partie {
   char mot[MAX_CHAR];
@@ -316,7 +316,7 @@ void AffichemotExistePas(Partie& partie, unsigned int indice, char mot[]) {
 }
 
 /**
- * @brief Rendre un mot pour le robot.
+ * @brief Rendre un mot pour le robot si le joueur précédent a entré '?'
  */
 void trouve_Dico_Robot(Partie& partie) {
   //ifstream in("ods4.txt"); // on ouvre le fichier
@@ -329,7 +329,7 @@ void trouve_Dico_Robot(Partie& partie) {
       resetMotJoueur(partie);
       strcpy(partie.motJoueurDeviner, pDico[i]);
       cout << pDico[i] << endl;
-      break;
+      return;
     }
   }
   if (i == tailleDico) {
