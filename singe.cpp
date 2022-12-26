@@ -62,6 +62,7 @@ void freeDico() {
   for (int i = 0; i < tailleDico; i++)
     delete[] pDico[i];
   delete[] pDico;
+  delete[] listeLettre;
 }
 
 char** buildDico(int& oMaxTaille) {
@@ -618,6 +619,7 @@ int trouve_mot_DICO(Partie& partie) {
           return 0;
         }
         else {
+          delete[] motDico;
           return 0;
         }
       }
@@ -625,7 +627,6 @@ int trouve_mot_DICO(Partie& partie) {
     i++;
   }
   delete[]motDico;
-
   return 1;   // return 1 si le mot existe pas
 }
 
