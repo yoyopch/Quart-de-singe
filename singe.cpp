@@ -17,7 +17,7 @@ enum { MAX_CHAR = 26 };
 #define FAUX 0
 typedef int BOOL;
 
-#define TRACE 1
+#define TRACE 0
 
 struct Partie {
   char mot[MAX_CHAR];
@@ -281,7 +281,8 @@ unsigned int trouve_Dico(Partie& partie, char trouve_mot[])
   for (int i = 0; i < tailleDico; i++) {
     char* pmot = pDico[i];
 
-    if (strcmp(trouve_mot, pmot) == 0) {
+    if (strncmp(trouve_mot, pmot, strlen(pmot)) == 0) {
+
       if (TRACE)
         cout << "trouve_Dico mot trouve = " << pmot << endl;
 
@@ -511,10 +512,30 @@ int verifDebutMot(Partie& partie, char mot[], unsigned int& nbNombre) {
   unsigned int oreturn = 0;
   char lettreRand = 'A' + rand() % MAX_CHAR;
   int lettreExiste = AjoutLettreUtil(lettreRand);
+
+
+  if (TRACE)
+    cout << "verifDebutMot lettreRand = " << lettreRand << " et nbNombre = " << nbNombre << endl;
+
+  int nbRand = 0;
+
+
   // lettreExiste == 1 si la lettre a deja été générée
   while (lettreExiste) {
+    if (nbRand == MAX_CHAR)
+      return 1;
     lettreRand = 'A' + rand() % MAX_CHAR;
+    nbRand++;
     lettreExiste = AjoutLettreUtil(lettreRand);
+
+
+    if (TRACE)
+      cout << "verifDebutMot lettreExiste = " << lettreExiste << endl;
+
+
+    if (TRACE)
+      cout << "verifDebutMot lettreRand = " << lettreRand << " et nbNombre = " << nbNombre << endl;
+
   }
 
 
@@ -522,11 +543,10 @@ int verifDebutMot(Partie& partie, char mot[], unsigned int& nbNombre) {
   mot[partie.taillemot] = lettreRand;
   partie.motRobot[0] = lettreRand;
 
-  if (nbNombre == 26)
+  if (nbNombre == MAX_CHAR)
     return 1;
 
-  if (TRACE)
-    cout << "verifDebutMot lettreRand = " << lettreRand << " et nbNombre = " << nbNombre << endl;
+
 
   unsigned int motExiste = motDebutExiste(partie, mot);
   // voir si il y a un mot dans le dictionnaire qui commencence par "mot"
@@ -537,8 +557,14 @@ int verifDebutMot(Partie& partie, char mot[], unsigned int& nbNombre) {
 
     int motTrouve = trouve_Dico(partie, mot);
     if (motTrouve) {
+
+
+
       if (TRACE)
-        cout << "verifDebutMot motTrouve =" << motTrouve << endl;
+        cout << "verifDebutMot motTrouve  trouve_Dico =" << motTrouve << endl;
+
+
+
       nbNombre++;
       oreturn = verifDebutMot(partie, mot, nbNombre);
     }
@@ -554,6 +580,8 @@ int verifDebutMot(Partie& partie, char mot[], unsigned int& nbNombre) {
     nbNombre++;
     oreturn = verifDebutMot(partie, mot, nbNombre);
   }
+
+
   if (TRACE)
     cout << "verifDebutMot oreturn =" << oreturn << endl;
 
