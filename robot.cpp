@@ -1,11 +1,8 @@
-
 #include "robot.h"
-#include "dico.h"
 #include "partie.h"
-#include "Header.h"
+#include "dico.h"
 
 #pragma warning(disable: 4996)
-
 
 /**
  * @brief Trouver un mot pour le robot si le joueur précédent a entré '?', et l'afficher
@@ -203,7 +200,6 @@ int construireMot_Robot(Dico& idico, Partie& partie, char mot[], unsigned int& n
 
   int nbRand = 0;
 
-
   // lettreExiste == 1 si la lettre a deja été générée
   while (lettreExiste) {
     if (nbRand == MAX_CHAR)
@@ -218,42 +214,24 @@ int construireMot_Robot(Dico& idico, Partie& partie, char mot[], unsigned int& n
 
   }
 
-
   if (mot) {
     mot[partie.taillemot] = lettreRand;
   }
-
   partie.motRobot[0] = lettreRand;
-
   if (nbNombre == MAX_CHAR)
     return 1;
-
-
 
   unsigned int motExiste = motDebutExiste(idico, partie, mot);
   // voir si il y a un mot dans le dictionnaire qui commencence par "mot"
   if (motExiste) {
 
-    if (TRACE)
-      cout << "verifDebutMot motDebutExiste motExiste =" << motExiste << endl;
-
     int motTrouve = trouverMotDansDico(idico, mot);
     if (motTrouve) {
-
-
-
-      if (TRACE)
-        cout << "verifDebutMot motTrouve  trouve_Dico =" << motTrouve << endl;
-
-
 
       nbNombre++;
       oreturn = construireMot_Robot(idico, partie, mot, nbNombre, listeLettre);
     }
     else {
-
-      if (TRACE)
-        cout << "verifDebutMot return = " << 1 << endl;
 
       return 1;
     }
@@ -263,10 +241,5 @@ int construireMot_Robot(Dico& idico, Partie& partie, char mot[], unsigned int& n
     oreturn = construireMot_Robot(idico, partie, mot, nbNombre, listeLettre);
   }
 
-
-  if (TRACE)
-    cout << "verifDebutMot oreturn =" << oreturn << endl;
-
   return oreturn;
-
 }

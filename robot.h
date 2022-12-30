@@ -1,10 +1,13 @@
-
 #ifndef _ROBOT_
 #define _ROBOT_
 
+/**
+ * @file robot.h
+ * @author Yohann PECH - Mehdi BOUZIANE - Grp 106
+ * @brief Toutes les fonctions relatives au robot.
+ */
+
 #include "Header.h"
-#include "partie.h"
-#include "dico.h"
 
 /**
  * @brief Trouver un mot pour le robot si le joueur précédent a entré '?', et l'afficher

@@ -2,7 +2,7 @@
 #include <iomanip> // pour setw
 
 #include "dico.h"
-#include "Header.h"
+
 
 /**
  * @brief Remplir le dictionnaire

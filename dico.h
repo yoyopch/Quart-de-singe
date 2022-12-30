@@ -1,16 +1,13 @@
-
 #ifndef _DICO_
 #define _DICO_
 
+/**
+ * @file dico.h
+ * @author Yohann PECH - Mehdi BOUZIANE - Grp 106
+ * @brief Toutes les fonctions relatives au dictionnaire.
+ */
+
 #include "Header.h"
-
-struct Dico {
-  int tailleDico;
-  char** mots = NULL;
-  char* listeLettre = new char[MAX_CHAR];
-};
-
-#include "partie.h"
 
 /**
  * @brief Remplir le dictionnaire
