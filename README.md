@@ -25,6 +25,10 @@ numéro suivi de leur nature. Par exemple si l’utilisateur a saisi ‘HRH’, 
 robot nommé 2R, et la troisième 3H. 
 
 
+# **Graphe de dépendance des fichiers sources :**
+
+![image](https://user-images.githubusercontent.com/117366105/212546303-8c863f5a-103a-4af0-93e6-6d70ed685205.png)
+
 # **Code source des tests unitaires :**
 
 Pour vérifier et tester notre programme, nous avons créé un code de test unitaire pour :
